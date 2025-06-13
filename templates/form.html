@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter Records – EFL 3PL</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Iskoola+Pota&family=Latha&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff6600;
+            --primary-light: #ff8533;
+            --primary-dark: #e65c00;
+            --secondary-color: #4a6fa5;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #333333;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+            padding: 20px;
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .header:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 28px;
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+        }
+        
+        .filter-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-title i {
+            font-size: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+        }
+        
+        .form-row input[type="text"] {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--medium-gray);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+        
+        .form-row input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #3a5a8c;
+        }
+        
+        .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .results-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .results-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .results-count {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            line-height: 0.25;
+            table-layout: auto;
+        }
+        
+        th, td {
+            border: 1px solid var(--medium-gray);
+            padding: 3px 5px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 300;
+            position:sticky;
+            top: 0;
+        }
+        
+        #matchesTable td, #matchesTable th {
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: clip;
+            line-height: 0.7;
+            padding: 8px 12px;
+            max-width: none !important;
+        }
+
+        #matchesTable {
+            table-layout: auto;
+            width: 100%;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+        
+        tr:hover {
+            background-color: rgba(255, 102, 0, 0.1);
+        }
+        
+        tr.selected {
+            background-color: rgba(74, 111, 165, 0.2) !important;
+            font-weight: 500;
+        }
+        
+        tr.selected td {
+            border-bottom: 2px solid var(--secondary-color);
+            border-top: 2px solid var(--secondary-color);
+        }
+        
+        tr.selected td:first-child {
+            border-left: 2px solid var(--secondary-color);
+        }
+        
+        tr.selected td:last-child {
+            border-right: 2px solid var(--secondary-color);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: var(--dark-gray);
+            font-style: italic;
+        }
+        
+        .voice-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: white;
+            padding: 11px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .voice-status {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .voice-status .icon {
+            font-size: 20px;
+        }
+        
+        .listening {
+            color: var(--success-color);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .off {
+            color: var(--error-color);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark-gray);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .download-buttons button {
+            flex: 1;
+            max-width: 250px;
+        }
+
+        .selection-info {
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: var(--primary-color);
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .arduino-data-section {
+            margin: 15px 0;
+            padding: 12px 15px;
+            background-color: #f8eae0;
+            border-left: 4px solid var(--primary-color);
+            border-radius: var(--border-radius);
+        }
+        
+        .arduino-data-section h3 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .arduino-data-section h3 i {
+            font-size: 16px;
+        }
+        
+        .live-length-display {
+            font-size: 60px;
+            font-weight: bold;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-indicator {
+            font-size: 12px;
+            margin-left: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background-color: var(--medium-gray);
+            font-weight: normal;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .language-selector select {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--medium-gray);
+            background-color: white;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+
+        /* For RTL languages */
+        [dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* Sinhala font */
+        .si-font {
+            font-family: 'Iskoola Pota', 'Arial Unicode MS', sans-serif;
+        }
+
+        /* Tamil font */
+        .ta-font {
+            font-family: 'Latha', 'Arial Unicode MS', sans-serif;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .input-group {
+                min-width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .voice-control {
+                bottom: 15px;
+                right: 15px;
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+            }
+            
+            .download-buttons {
+                flex-direction: column;
+            }
+            
+            .download-buttons button {
+                max-width: 100%;
+            }
+            
+            .language-selector {
+                position: static;
+                margin-top: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <h1 data-translate="title">EFL 3PL – Filter Records</h1>
+        <div class="language-selector">
+            <select id="languageSelect">
+                <option value="en">English</option>
+                <option value="si">සිංහල (Sinhala)</option>
+                <option value="ta">தமிழ் (Tamil)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <div class="filter-title">
+            <i class="fas fa-filter"></i>
+            <span data-translate="filter_criteria">Filter Criteria</span>
+        </div>
+        
+        <div class="form-row">
+            <div class="input-group">
+                <label for="SUPPLIER_HU" data-translate="supplier_hu">Supplier HU</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-barcode"></i>
+                    <input type="text" id="SUPPLIER_HU" class="last3-digits" placeholder="Enter supplier HU...">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="LOT_NUMBER" data-translate="lot_number">Lot Number</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-hashtag"></i>
+                    <input type="text" id="LOT_NUMBER" placeholder="Enter lot number...">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="QUANTITY" data-translate="quantity">Quantity</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-boxes"></i>
+                    <input type="text" id="QUANTITY" placeholder="Enter quantity...">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="Color" data-translate="color">Color</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-palette"></i>
+                    <input type="text" id="Color" placeholder="Enter color...">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn-secondary" id="clearFilters">
+                <i class="fas fa-eraser"></i> <span data-translate="clear_all">Clear All</span>
+            </button>
+            <button class="btn-primary" id="refreshData">
+                <i class="fas fa-sync-alt"></i> <span data-translate="refresh">Refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="results-section">
+        <div class="results-header">
+            <div class="results-title">
+                <i class="fas fa-table"></i>
+                <span data-translate="matching_records">Matching Records</span>
+                <div class="results-count" id="resultsCount">0</div>
+            </div>
+        </div>
+        
+        <div class="download-buttons">
+            <button class="btn-primary" id="downloadAllRecords">
+                <i class="fas fa-download"></i> <span data-translate="download_all">Download All Records</span>
+            </button>
+            <button class="btn-secondary" id="downloadSelectedRecords" disabled>
+                <i class="fas fa-download"></i> <span data-translate="download_selected">Download Selected</span>
+            </button>
+            <button class="btn-primary" id="printSelectedSticker" disabled>
+                <i class="fas fa-print"></i> <span data-translate="print_selected">Print Selected</span>
+            </button>
+            <button class="btn-secondary" id="printAllSelected" disabled>
+                <i class="fas fa-print"></i> <span data-translate="print_all_selected">Print All Selected</span>
+            </button>
+        </div>
+        
+        <div class="selection-info" id="selectionInfo">
+            <i class="fas fa-info-circle"></i> <span id="selectedCount">0</span> <span data-translate="records_selected">record(s) selected</span>
+        </div>
+        
+        <table id="matchesTable">
+            <thead>
+                <tr id="table-head">
+                    {% set input_fields = ["SUPPLIER_HU", "LOT_NUMBER", "QUANTITY", "Color"] %}
+                    
+                    {# Show input fields first if present in columns #}
+                    {% for col in input_fields if col in columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                    
+                    {# Then show the rest of the columns #}
+                    {% for col in columns if col not in input_fields %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="voice-control">
+    <button class="btn-primary" id="startVoice">
+        <i class="fas fa-microphone"></i> <span data-translate="voice_start">Start</span>
+    </button>
+    <button class="btn-danger" id="stopVoice">
+        <i class="fas fa-microphone-slash"></i> <span data-translate="voice_stop">Stop</span>
+    </button>
+    <div class="voice-status">
+        <span class="icon"><i class="fas fa-microphone"></i></span>
+        <span id="voiceStatusText" class="off" data-translate="voice_off">Off</span>
+    </div>
+    <div class="tooltip" style="margin-left: 0;">
+        <i class="fas fa-info-circle"></i>
+        <span class="tooltiptext" style="width: 250px; left: -115px;">
+            <strong data-translate="voice_commands">Voice Commands:</strong><br>
+            - "Next" to move between fields<br>
+            - "Clear" to clear current field<br>
+            - "Clear all" to reset all filters<br>
+            - "Refresh" to reload data<br>
+            - For SUPPLIER_HU: "last three 123" (auto-selects top match)
+        </span>
+    </div>
+</div>
+
+<div class="arduino-data-section">
+    <h3><i class="fas fa-ruler-horizontal"></i> <span data-translate="fabric_length">Live Fabric Length</span></h3>
+    <div class="live-length-display">
+        <span id="fabricLengthCm">0.00</span>
+        <span id="fabricLengthIn">(0.00 in)</span>
+        <div class="status-indicator">
+            <span id="statusText" data-translate="connecting">Connecting...</span>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+<script>
+    // Global variables
+    const fields = ["SUPPLIER_HU", "LOT_NUMBER", "QUANTITY", "Color"];
+    let currentInputIndex = 0;
+    let recognition;
+    let recognizing = false;
+    let isVoiceCommand = false;
+    let currentData = [];
+
+    // Translation dictionary
+    const translations = {
+        en: {
+            "title": "EFL 3PL – Filter Records",
+            "filter_criteria": "Filter Criteria",
+            "supplier_hu": "Supplier HU",
+            "lot_number": "Lot Number",
+            "quantity": "Quantity",
+            "color": "Color",
+            "clear_all": "Clear All",
+            "refresh": "Refresh",
+            "matching_records": "Matching Records",
+            "download_all": "Download All Records",
+            "download_selected": "Download Selected",
+            "print_selected": "Print Selected",
+            "print_all_selected": "Print All Selected",
+            "records_selected": "record(s) selected",
+            "no_results": "No matching records found.",
+            "error_loading": "Error loading data. Please try again.",
+            "voice_commands": "Voice Commands:",
+            "voice_start": "Start",
+            "voice_stop": "Stop",
+            "voice_off": "Off",
+            "voice_listening": "Listening",
+            "fabric_length": "Live Fabric Length",
+            "connecting": "Connecting...",
+            "measuring": "Measuring",
+            "idle": "Idle",
+            "connection_error": "Connection Error",
+            "no_selection": "Please select at least one record",
+            "select_one": "Please select only one record",
+            "record_error": "Could not retrieve record data",
+            "printing": "Printing...",
+            "print_success": "Label printed successfully!",
+            "print_failed": "Printing failed",
+            "print_error": "Error printing sticker",
+            "print_success_multi": "Successfully printed {count} sticker(s)!",
+            "voice_not_supported": "Speech recognition not supported",
+            "voice_error": "Error starting voice recognition",
+            "loading": "Loading..."
+        },
+        si: {
+            "title": "EFL 3PL - වාර්තා පෙරහන් කරන්න",
+            "filter_criteria": "පෙරහන් නිර්ණායක",
+            "supplier_hu": "සැපයුම්කරු HU",
+            "lot_number": "ලොට් අංකය",
+            "quantity": "ප්‍රමාණය",
+            "color": "වර්ණය",
+            "clear_all": "සියල්ල මකන්න",
+            "refresh": "නැවුම් කරන්න",
+            "matching_records": "ගැලපෙන වාර්තා",
+            "download_all": "සියලු වාර්තා බාගන්න",
+            "download_selected": "තෝරාගත් බාගන්න",
+            "print_selected": "තෝරාගතු මුද්‍රණය කරන්න",
+            "print_all_selected": "තෝරාගත් සියල්ල මුද්‍රණය කරන්න",
+            "records_selected": "වාර්තා(ව) තෝරාගෙන ඇත",
+            "no_results": "ගැලපෙන වාර්තා හමු නොවීය.",
+            "error_loading": "දත්ත ලබා ගැනීමේ දෝෂයක්. කරුණාකර නැවත උත්සාහ කරන්න.",
+            "voice_commands": "හඬ නියෝග:",
+            "voice_start": "ආරම්භකරන්න",
+            "voice_stop": "නවත්වන්න",
+            "voice_off": "අක්‍රියයි",
+            "voice_listening": "සවන් දෙමින්",
+            "fabric_length": "සාප්පු දිග සජීවීව",
+            "connecting": "සම්බන්ධ වෙමින්...",
+            "measuring": "මැනීම",
+            "idle": "අක්‍රිය",
+            "connection_error": "සම්බන්ධතා දෝෂය",
+            "no_selection": "කරුණාකර අවම වශයෙන් එක් වාර්තාවක් තෝරන්න",
+            "select_one": "කරුණාකර එක් වාර්තාවක් පමණක් තෝරන්න",
+            "record_error": "තෝරාගත් වාර්තා දත්ත ලබා ගත නොහැකි විය",
+            "printing": "මුද්‍රණය වෙමින්...",
+            "print_success": "ලේබලය සාර්ථකව මුද්‍රණය කරන ලදී!",
+            "print_failed": "මුද්‍රණය අසාර්ථක විය",
+            "print_error": "ස්ටිකරය මුද්‍රණය කිරීමේ දෝෂය",
+            "print_success_multi": "සාර්ථකව මුද්‍රණය කරන ලදී {count} ස්ටිකර්(ය)",
+            "voice_not_supported": "කථන හඳුනාගැනීම සහාය නොදක්වයි",
+            "voice_error": "හඬ හඳුනාගැනීම ආරම්භ කිරීමේ දෝෂය",
+            "loading": "පූරණය වෙමින්..."
+        },
+        ta: {
+            "title": "EFL 3PL - பதிவுகளை வடிகட்டவும்",
+            "filter_criteria": "வடிகட்டும் அளவுகோல்கள்",
+            "supplier_hu": "சப்ளையர் HU",
+            "lot_number": "லாட் எண்",
+            "quantity": "அளவு",
+            "color": "நிறம்",
+            "clear_all": "அனைத்தையும் அழி",
+            "refresh": "புதுப்பிக்கவும்",
+            "matching_records": "பொருந்தும் பதிவுகள்",
+            "download_all": "அனைத்து பதிவுகளையும் பதிவிறக்கவும்",
+            "download_selected": "தேர்ந்தெடுக்கப்பட்டவற்றை பதிவிறக்கவும்",
+            "print_selected": "தேர்ந்தெடுக்கப்பட்ட ஸ்டிக்கர் அச்சிடுக",
+            "print_all_selected": "தேர்ந்தெடுக்கப்பட்ட அனைத்தையும் அச்சிடுக",
+            "records_selected": "பதிவு(கள்) தேர்ந்தெடுக்கப்பட்டது",
+            "no_results": "பொருந்தும் பதிவுகள் எதுவும் கிடைக்கவில்லை.",
+            "error_loading": "தரவு ஏற்றுவதில் பிழை. மீண்டும் முயற்சிக்கவும்.",
+            "voice_commands": "குரல் கட்டளைகள்:",
+            "voice_start": "தொடங்கு",
+            "voice_stop": "நிறுத்து",
+            "voice_off": "அணைக்கப்பட்டது",
+            "voice_listening": "கேட்டுக்கொண்டிருக்கிறது",
+            "fabric_length": "நேரடி துணி நீளம்",
+            "connecting": "இணைக்கிறது...",
+            "measuring": "அளவிடுதல்",
+            "idle": "செயலற்று",
+            "connection_error": "இணைப்பு பிழை",
+            "no_selection": "குறைந்தது ஒரு பதிவையாவது தேர்ந்தெடுக்கவும்",
+            "select_one": "ஒரு பதிவை மட்டும் தேர்ந்தெடுக்கவும்",
+            "record_error": "தேர்ந்தெடுக்கப்பட்ட பதிவு தரவை பெற முடியவில்லை",
+            "printing": "அச்சிடுகிறது...",
+            "print_success": "லேபிள் வெற்றிகரமாக அச்சிடப்பட்டது!",
+            "print_failed": "அச்சிடுதல் தோல்வியடைந்தது",
+            "print_error": "ஸ்டிக்கர் அச்சிடுவதில் பிழை",
+            "print_success_multi": "{count} ஸ்டிக்கர்(கள்) வெற்றிகரமாக அச்சிடப்பட்டது",
+            "voice_not_supported": "பேச்சு அங்கீகாரம் ஆதரிக்கப்படவில்லை",
+            "voice_error": "குரல் அங்கீகாரத்தை தொடங்குவதில் பிழை",
+            "loading": "ஏற்றுகிறது..."
+        }
+    };
+
+    // Number to word mapping for voice input
+    const numberWords = {
+        'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
+        'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9'
+    };
+
+    // Function to convert number words to digits
+    function wordsToNumbers(text) {
+        return text.replace(/\b(zero|one|two|three|four|five|six|seven|eight|nine)\b/gi, 
+            match => numberWords[match.toLowerCase()]);
+    }
+
+    // Function to initialize autocomplete for a field
+    function initAutocomplete(field) {
+        $.getJSON(`/suggest/${field}`, data => {
+            $(`#${field}`).autocomplete({
+                source: function(request, response) {
+                    const term = request.term.toLowerCase();
+                    const results = $.ui.autocomplete.filter(data, term);
+                    response(request.term === "" ? data.slice(0,15) : results.slice(0,15));
+                },
+                minLength: 0,
+                select: function(event, ui) {
+                    $(this).val(ui.item.value);
+                    fetchFilteredRecords();
+                    return false;
+                }
+            }).focus(function() {
+                $(this).autocomplete("search", $(this).val());
+                });
+        });
+    }
+
+    // Function to process voice input for numeric fields
+    function processNumericVoiceInput(field, transcript) {
+        transcript = wordsToNumbers(transcript);
+        const numbers = transcript.match(/\d+/g);
+        if (numbers && numbers.length > 0) {
+            const input = $(`#${field}`);
+            
+            $.getJSON(`/suggest/${field}`, function(suggestions) {
+                const matchingSuggestions = suggestions.filter(s => 
+                    numbers.some(num => s.toString().includes(num)))
+                    .sort((a, b) => a.length - b.length);
+                
+                if (matchingSuggestions.length > 0) {
+                    const bestMatch = matchingSuggestions[0];
+                    input.val(bestMatch).trigger('input');
+                    fetchFilteredRecords();
+                    setTimeout(() => moveToNextField(fields.indexOf(field)), 500);
+                } else {
+                    input.val(numbers.join('')).trigger('input');
+                }
+            });
+        }
+    }
+
+    // Function to change language
+    function changeLanguage(lang) {
+        $('body').removeClass('si-font ta-font').addClass(lang === 'si' ? 'si-font' : (lang === 'ta' ? 'ta-font' : ''));
+        
+        $('[data-translate]').each(function() {
+            const key = $(this).data('translate');
+            $(this).text(translations[lang][key] || translations['en'][key]);
+        });
+        
+        $('.tooltiptext').each(function() {
+            const originalText = $(this).data('original-text') || $(this).text();
+            $(this).data('original-text', originalText);
+            
+            if (originalText.includes("Voice Commands:")) {
+                $(this).html(`
+                    <strong>${translations[lang]['voice_commands'] || translations['en']['voice_commands']}</strong><br>
+                    - "Next" to move between fields<br>
+                    - "Clear" to clear current field<br>
+                    - "Clear all" to reset all filters<br>
+                    - "Refresh" to reload data<br>
+                    - For SUPPLIER_HU: "last three 123" (auto-selects top match)
+                `);
+            }
+        });
+        
+        if (recognition && recognizing) {
+            recognition.lang = lang === 'si' ? 'si-LK' : (lang === 'ta' ? 'ta-IN' : 'en-US');
+        }
+        
+        localStorage.setItem('preferredLanguage', lang);
+    }
+
+    // Function to get a timestamp for filenames
+    function getTimestamp() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        return `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
+    }
+
+    // Function to download all matching records as an Excel file
+    function downloadAllRecords() {
+        if (currentData.length === 0) {
+            alert(translations[$('#languageSelect').val()]['no_results'] || "No records available to download.");
+            return;
+        }
+        const timestamp = getTimestamp();
+        const filename = `EFL_matching_records_${timestamp}.xlsx`;
+        const ws = XLSX.utils.json_to_sheet(currentData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Matching Records");
+        XLSX.writeFile(wb, filename);
+    }
+
+    // Function to download selected records
+    function downloadSelectedRecord() {
+        const selectedRows = $("#matchesTable tr.selected");
+        if (selectedRows.length === 0) {
+            alert(translations[$('#languageSelect').val()]['no_selection'] || "Please select at least one record to download.");
+            return;
+        }
+        const selectedIndices = [];
+        selectedRows.each(function() {
+            selectedIndices.push($(this).index());
+        });
+        const selectedData = selectedIndices.map(index => currentData[index]);
+        const timestamp = getTimestamp();
+        const filename = `EFL_selected_records_${timestamp}.xlsx`;
+        const ws = XLSX.utils.json_to_sheet(selectedData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Selected Records");
+        XLSX.writeFile(wb, filename);
+    }
+
+    // Function to print the selected sticker
+    function printSelectedSticker() {
+        const selectedRows = $("#matchesTable tr.selected");
+        const lang = $('#languageSelect').val();
+        
+        if (selectedRows.length === 0) {
+            alert(translations[lang]['no_selection'] || "Please select a record to print a sticker.");
+            return;
+        }
+        if (selectedRows.length > 1) {
+            alert(translations[lang]['select_one'] || "Please select only one record to print a sticker.");
+            return;
+        }
+
+        const selectedIndex = selectedRows.first().index();
+        const recordToPrint = currentData[selectedIndex];
+
+        if (!recordToPrint) {
+            alert(translations[lang]['record_error'] || "Could not retrieve the selected record data.");
+            return;
+        }
+
+        $("#printSelectedSticker").prop("disabled", true).html(`<span class="loading"></span> ${translations[lang]['printing'] || 'Printing...'}`);
+
+        fetch('/print-sticker', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                data: recordToPrint
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(result => {
+            if (result.success) {
+                alert(result.message || translations[lang]['print_success'] || "Label printed successfully!");
+            } else {
+                throw new Error(result.message || translations[lang]['print_failed'] || "Printing failed");
+            }
+        })
+        .catch(error => {
+            console.error('Error printing sticker:', error);
+            alert(translations[lang]['print_error'] || 'Error printing sticker: ' + error.message);
+        })
+        .finally(() => {
+            $("#printSelectedSticker").html(`<i class="fas fa-print"></i> ${translations[lang]['print_selected'] || 'Print Selected'}`);
+            updateSelectionUI();
+        });
+    }
+
+    // Function to print all selected records
+    function printAllSelectedRecords() {
+        const selectedRows = $("#matchesTable tr.selected");
+        const lang = $('#languageSelect').val();
+        
+        if (selectedRows.length === 0) {
+            alert(translations[lang]['no_selection'] || "Please select at least one record to print.");
+            return;
+        }
+
+        const selectedIndices = [];
+        selectedRows.each(function() {
+            selectedIndices.push($(this).index());
+        });
+        const selectedData = selectedIndices.map(index => currentData[index]);
+
+        $("#printAllSelected").prop("disabled", true).html(`<span class="loading"></span> ${translations[lang]['printing'] || 'Printing...'}`);
+
+        fetch('/print-multiple-stickers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                records: selectedData
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(result => {
+            if (result.success) {
+                alert(translations[lang]['print_success_multi'].replace('{count}', selectedData.length) || `Successfully printed ${selectedData.length} sticker(s)!`);
+            } else {
+                throw new Error(result.message || translations[lang]['print_failed'] || "Printing failed");
+            }
+        })
+        .catch(error => {
+            console.error('Error printing stickers:', error);
+            alert(translations[lang]['print_error'] || 'Error printing stickers: ' + error.message);
+        })
+        .finally(() => {
+            $("#printAllSelected").html(`<i class="fas fa-print"></i> ${translations[lang]['print_all_selected'] || 'Print All Selected'}`);
+        });
+    }
+
+    // Update selection UI
+    function updateSelectionUI() {
+        const selectedCount = $("#matchesTable tr.selected").length;
+        const lang = $('#languageSelect').val();
+        const downloadSelectedBtn = $("#downloadSelectedRecords");
+        const printSelectedBtn = $("#printSelectedSticker");
+        const printAllSelectedBtn = $("#printAllSelected");
+        const selectionInfo = $("#selectionInfo");
+
+        if (selectedCount > 0) {
+            downloadSelectedBtn.prop("disabled", false);
+            printSelectedBtn.prop("disabled", selectedCount !== 1);
+            printAllSelectedBtn.prop("disabled", false);
+            selectionInfo.show();
+            $("#selectedCount").text(selectedCount);
+        } else {
+            downloadSelectedBtn.prop("disabled", true);
+            printSelectedBtn.prop("disabled", true);
+            printAllSelectedBtn.prop("disabled", true);
+            selectionInfo.hide();
+        }
+    }
+
+    // Add row selection functionality
+    function setupRowSelection() {
+        $("#matchesTable tbody").on("click", "tr", function(e) {
+            if ($(e.target).is("a, button, input, select, textarea, .fas")) {
+                return;
+            }
+            $(this).toggleClass("selected");
+            updateSelectionUI();
+        });
+
+        $(document).on("keydown", function(e) {
+            if (e.ctrlKey && (e.key === "a" || e.key === "A")) {
+                e.preventDefault();
+                $("#matchesTable tbody tr").addClass("selected");
+                updateSelectionUI();
+            }
+            if (e.key === "Enter" && $("#matchesTable tr.selected").length > 0) {
+                e.preventDefault();
+                const selectedCount = $("#matchesTable tr.selected").length;
+                if (selectedCount === 1) {
+                    printSelectedSticker();
+                } else {
+                    printAllSelectedRecords();
+                }
+            }
+        });
+    }
+
+    // Debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                func.apply(context, args);
+            }, wait);
+        };
+    }
+
+    // Function to move to next field
+    function moveToNextField(currentIndex) {
+        const nextIndex = (currentIndex + 1) % fields.length;
+        $(`#${fields[nextIndex]}`).focus().select();
+        currentInputIndex = nextIndex;
+    }
+
+    // Function to fetch and display filtered records
+    function fetchFilteredRecords() {
+        const params = {
+            SUPPLIER_HU: $('#SUPPLIER_HU').val(),
+            LOT_NUMBER: $('#LOT_NUMBER').val(),
+            QUANTITY: $('#QUANTITY').val(),
+            Color: $('#Color').val()
+        };
+
+        const lang = $('#languageSelect').val();
+        const refreshBtn = $('#refreshData');
+        const originalHtml = refreshBtn.html();
+        refreshBtn.html(`<span class="loading"></span> ${translations[lang]['loading'] || 'Loading...'}`);
+        refreshBtn.prop('disabled', true);
+
+        $.get('/filter', params, function(data) {
+            currentData = data;
+            const tbody = $("#matchesTable tbody");
+            tbody.empty();
+            $('#resultsCount').text(data.length);
+
+            if (data.length === 0) {
+                tbody.append(`<tr><td colspan="${$("#table-head th").length}" class="no-results">${translations[lang]['no_results'] || 'No matching records found.'}</td></tr>`);
+            } else {
+                const columnOrder = [];
+                $("#table-head th").each(function() {
+                    columnOrder.push($(this).text().trim());
+                });
+                data.forEach(row => {
+                    const tr = $("<tr>");
+                    columnOrder.forEach(col => {
+                        tr.append($("<td>").text(row[col] || ''));
+                    });
+                    tbody.append(tr);
+                });
+                setTimeout(autoAdjustColumnWidths, 0);
+            }
+        }).fail(function() {
+            currentData = [];
+            const lang = $('#languageSelect').val();
+            $("#matchesTable tbody").empty().append(`<tr><td colspan="${$("#table-head th").length}" class="no-results">${translations[lang]['error_loading'] || 'Error loading data. Please try again.'}</td></tr>`);
+            $('#resultsCount').text(0);
+        }).always(function() {
+            refreshBtn.html(originalHtml);
+            refreshBtn.prop('disabled', false);
+            updateSelectionUI();
+        });
+    }
+
+    // Voice recognition functions
+    function startVoiceRecognition() {
+        if (recognizing) return;
+        const lang = $('#languageSelect').val();
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+            alert(translations[lang]['voice_not_supported'] || "Speech recognition is not supported in your browser.");
+            return;
+        }
+        
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = lang === 'si' ? 'si-LK' : (lang === 'ta' ? 'ta-IN' : 'en-US');
+        
+        recognition.onstart = () => {
+            recognizing = true;
+            updateVoiceUI(true);
+            console.log("Voice recognition started");
+        };
+        
+        recognition.onend = () => {
+            recognizing = false;
+            updateVoiceUI(false);
+            console.log("Voice recognition ended");
+        };
+        
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+            console.log("Voice input:", transcript);
+            processVoiceCommand(transcript);
+        };
+        
+        recognition.onerror = (event) => {
+            console.error("Voice recognition error:", event.error);
+            updateVoiceUI(false);
+        };
+        
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error("Error starting recognition:", e);
+            alert(translations[lang]['voice_error'] || "Error starting voice recognition.");
+        }
+    }
+
+    function stopVoiceRecognition() {
+        if (recognition && recognizing) {
+            console.log("Stopping voice recognition...");
+            isVoiceCommand = false;
+            recognition.stop();
+        }
+    }
+
+    function updateVoiceUI(isListening) {
+        const lang = $('#languageSelect').val();
+        const statusText = $("#voiceStatusText");
+        const icon = $(".voice-status .icon i");
+        
+        if (isListening) {
+            statusText.text(translations[lang]['voice_listening'] || "Listening")
+                     .removeClass("off").addClass("listening");
+            icon.removeClass("fa-microphone").addClass("fa-microphone-alt");
+            $("#startVoice").prop("disabled", true);
+            $("#stopVoice").prop("disabled", false);
+        } else {
+            statusText.text(translations[lang]['voice_off'] || "Off")
+                     .removeClass("listening").addClass("off");
+            icon.removeClass("fa-microphone-alt").addClass("fa-microphone");
+            $("#startVoice").prop("disabled", false);
+            $("#stopVoice").prop("disabled", true);
+        }
+    }
+
+    function processVoiceCommand(transcript) {
+        isVoiceCommand = true;
+        if (transcript === "ok" || transcript === "okay" || transcript === "next") {
+            moveToNextField(currentInputIndex);
+        } else if (transcript === "clear" || transcript === "clear field") {
+            $(`#${fields[currentInputIndex]}`).val('').trigger('input');
+        } else if (transcript === "clear all" || transcript === "reset") {
+            clearAllFilters();
+            // Explicitly move to SUPPLIER_HU field
+            $('#SUPPLIER_HU').focus().select();
+            currentInputIndex = fields.indexOf('SUPPLIER_HU');
+        } else if (transcript === "refresh" || transcript === "reload") {
+                    fetchFilteredRecords();
+        } else {
+            isVoiceCommand = false;
+            const currentFieldId = document.activeElement.id;
+            const currentField = fields.includes(currentFieldId) ? currentFieldId : fields[currentInputIndex];
+            
+            if (currentField === "SUPPLIER_HU" && (transcript.includes("last three") || transcript.match(/\d{3}$/))) {
+                const match = transcript.match(/(?:last three)?\s*(\d{3})$/i);
+                if (match && match[1]) {
+                    const lastThreeDigits = match[1];
+                    const input = $(`#${currentField}`);
+                    
+                    $.getJSON(`/suggest/SUPPLIER_HU`, function(suggestions) {
+                        const matchingSuggestions = suggestions.filter(s => s.toString().endsWith(lastThreeDigits));
+                        
+                        if (matchingSuggestions.length > 0) {
+                            matchingSuggestions.sort((a, b) => a.length - b.length);
+                            const bestMatch = matchingSuggestions[0];
+                            input.val(bestMatch).trigger('input');
+                            fetchFilteredRecords();
+                            setTimeout(() => moveToNextField(fields.indexOf(currentField)), 500);
+                        } else {
+                            input.val(lastThreeDigits).trigger('input');
+                        }
+                    });
+                }
+            } else if (currentField === "LOT_NUMBER" || currentField === "QUANTITY") {
+                processNumericVoiceInput(currentField, transcript);
+            } else {
+                $(`#${currentField}`).val(transcript).trigger('input');
+            }
+        }
+    }
+
+    function clearAllFilters() {
+    fields.forEach(field => $(`#${field}`).val(''));
+    fetchFilteredRecords();
+    // Move focus to SUPPLIER_HU field and update currentInputIndex
+    $('#SUPPLIER_HU').focus().select();
+    currentInputIndex = fields.indexOf('SUPPLIER_HU');
+}
+
+    function updateFabricDisplay(data) {
+        const lang = $('#languageSelect').val();
+        const displayCm = document.getElementById('fabricLengthCm');
+        const displayIn = document.getElementById('fabricLengthIn');
+        const statusText = document.getElementById('statusText');
+        
+        if (data.error) {
+            displayCm.textContent = translations[lang]['error'] || 'Error';
+            displayIn.textContent = `(${translations[lang]['error'] || 'Error'})`;
+            displayCm.style.color = '#F44336';
+            statusText.textContent = translations[lang]['connection_error'] || 'Connection Error';
+        } else {
+            displayCm.textContent = data.length_cm;
+            displayIn.textContent = `${data.length_in} in`;
+            
+            const status = (data.status || '').toLowerCase();
+            statusText.textContent = status === 'active' ? 
+                (translations[lang]['measuring'] || 'Measuring') : 
+                (translations[lang]['idle'] || 'Idle');
+            const color = status === 'active' ? '#ff6600' : '#FFC107';
+            displayCm.style.color = color;
+            displayIn.style.color = color;
+        }
+    }
+
+    function fetchFabricLength() {
+        fetch('/get-length')
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                updateFabricDisplay(data);
+                const status = (data.status || '').toLowerCase();
+                const pollingInterval = status === 'active' ? 500 : 1000;
+                setTimeout(fetchFabricLength, pollingInterval);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateFabricDisplay({error: true});
+                setTimeout(fetchFabricLength, 1000);
+            });
+    }
+
+    function autoAdjustColumnWidths() {
+        const table = document.getElementById('matchesTable');
+        if (!table) return;
+        
+        const headers = table.querySelectorAll('th');
+        headers.forEach(header => {
+            header.style.width = 'auto';
+        });
+        
+        table.offsetHeight;
+        
+        const rows = table.querySelectorAll('tr');
+        const colCount = headers.length;
+        const colWidths = new Array(colCount).fill(0);
+        
+        const tempRow = document.createElement('tr');
+        tempRow.style.position = 'absolute';
+        tempRow.style.visibility = 'hidden';
+        tempRow.style.whiteSpace = 'nowrap';
+        table.appendChild(tempRow);
+        
+        for (let i = 0; i < colCount; i++) {
+            const tempCell = document.createElement('td');
+            tempCell.style.padding = '8px 12px';
+            tempRow.appendChild(tempCell);
+        }
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td, th');
+            cells.forEach((cell, colIndex) => {
+                const tempCell = tempRow.children[colIndex];
+                tempCell.innerHTML = cell.innerHTML;
+                const cellWidth = tempCell.scrollWidth;
+                
+                if (cellWidth > colWidths[colIndex]) {
+                    colWidths[colIndex] = cellWidth;
+                }
+            });
+        });
+        
+        table.removeChild(tempRow);
+        
+        headers.forEach((header, colIndex) => {
+            header.style.width = (colWidths[colIndex] + 20) + 'px';
+        });
+        
+        table.style.width = 'auto';
+    }
+
+    // Initialize the page
+    $(document).ready(function() {
+        // Initialize language
+        const preferredLanguage = localStorage.getItem('preferredLanguage') || 'en';
+        $('#languageSelect').val(preferredLanguage);
+        changeLanguage(preferredLanguage);
+        
+        $('#languageSelect').change(function() {
+            changeLanguage($(this).val());
+        });
+
+        // Initialize autocomplete for all fields
+        fields.forEach(field => {
+            initAutocomplete(field);
+            $(`#${field}`).on("input", debounce(fetchFilteredRecords, 300));
+        });
+
+        // Event listeners for buttons
+        $("#clearFilters").on("click", clearAllFilters);
+        $("#refreshData").on("click", fetchFilteredRecords);
+        $("#downloadAllRecords").on("click", downloadAllRecords);
+        $("#downloadSelectedRecords").on("click", downloadSelectedRecord);
+        $("#printSelectedSticker").on("click", printSelectedSticker);
+        $("#printAllSelected").on("click", printAllSelectedRecords);
+
+        // Voice control buttons
+        $("#startVoice").on("click", function(e) { 
+            e.preventDefault(); 
+            startVoiceRecognition(); 
+        });
+        $("#stopVoice").on("click", function(e) { 
+            e.preventDefault(); 
+            stopVoiceRecognition(); 
+        });
+        $("#stopVoice").prop("disabled", true);
+
+        // Track focus changes for voice input context
+        $(document).on('focus', 'input[type="text"]', function() {
+            const fieldId = this.id;
+            if (fields.includes(fieldId)) {
+                currentInputIndex = fields.indexOf(fieldId);
+            }
+        });
+
+        // Initial setup calls
+        setupRowSelection();
+        fetchFilteredRecords();
+        fetchFabricLength();
+    });
+</script>
+</body>
+</html>

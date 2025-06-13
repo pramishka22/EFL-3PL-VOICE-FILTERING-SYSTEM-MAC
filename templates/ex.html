@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter Records – EFL 3PL</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff6600;
+            --primary-light: #ff8533;
+            --primary-dark: #e65c00;
+            --secondary-color: #4a6fa5;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #333333;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+            padding: 20px;
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1px;
+            text-align: center;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+        
+        .header:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 28px;
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 10px;
+        }
+        
+        .filter-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-title i {
+            font-size: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+        }
+        
+        .form-row input[type="text"] {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--medium-gray);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+        
+        .form-row input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #3a5a8c;
+        }
+        
+        .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .results-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .results-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .results-count {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            line-height: 0.5;
+        }
+        
+        th, td {
+            border: 1px solid var(--medium-gray);
+            padding: 3px 5px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 300;
+            position:sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+        
+        tr:hover {
+            background-color: rgba(255, 102, 0, 0.1);
+        }
+        
+        tr.selected {
+            background-color: rgba(74, 111, 165, 0.2) !important;
+            font-weight: 500;
+        }
+        
+        tr.selected td {
+            border-bottom: 2px solid var(--secondary-color);
+            border-top: 2px solid var(--secondary-color);
+        }
+        
+        tr.selected td:first-child {
+            border-left: 2px solid var(--secondary-color);
+        }
+        
+        tr.selected td:last-child {
+            border-right: 2px solid var(--secondary-color);
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: var(--dark-gray);
+            font-style: italic;
+        }
+        
+        .voice-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .voice-status {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .voice-status .icon {
+            font-size: 20px;
+        }
+        
+        .listening {
+            color: var(--success-color);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .off {
+            color: var(--error-color);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark-gray);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .download-buttons button {
+            flex: 1;
+            max-width: 250px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .input-group {
+                min-width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .voice-control {
+                bottom: 15px;
+                right: 15px;
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+            }
+            
+            .download-buttons {
+                flex-direction: column;
+            }
+            
+            .download-buttons button {
+                max-width: 100%;
+            }
+        }
+
+        /* Add to your CSS */
+@font-face {
+    font-family: 'Iskoola Pota';
+    src: local('Iskoola Pota'), local('IskoolaPota');
+    unicode-range: U+0D80-0DFF;
+}
+
+body {
+    font-family: 'Inter', 'Iskoola Pota', sans-serif;
+}
+ 
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>EFL 3PL – Filter Records</h1>
+    </div>
+
+    <div class="filter-section">
+        <div class="filter-title">
+            <i class="fas fa-filter"></i>
+            <span>Filter Criteria</span>
+        </div>
+        
+        <div class="form-row">
+            <div class="input-group">
+                <label for="SUPPLIER_HU">Supplier HU <div class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Enter the supplier HU number or say "last three" followed by digits for voice input</span></div></label>
+                <div class="input-wrapper">
+                    <i class="fas fa-barcode"></i>
+                    <input type="text" id="SUPPLIER_HU" class="last3-digits" placeholder="Enter supplier HU...">                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="LOT_NUMBER">Lot Number</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-hashtag"></i>
+                    <input type="text" id="LOT_NUMBER" placeholder="Enter lot number...">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="QUANTITY">Quantity</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-boxes"></i>
+                    <input type="text" id="QUANTITY" placeholder="Enter quantity...">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="Color">Color</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-palette"></i>
+                    <input type="text" id="Color" placeholder="Enter color...">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn-secondary" id="clearFilters">
+                <i class="fas fa-eraser"></i> Clear All
+            </button>
+            <button class="btn-primary" id="refreshData">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="results-section">
+        <div class="results-header">
+            <div class="results-title">
+                <i class="fas fa-table"></i>
+                <span>Matching Records</span>
+                <div class="results-count" id="resultsCount">0</div>
+            </div>
+        </div>
+        
+        <div class="download-buttons">
+            <button class="btn-primary" id="downloadAllRecords">
+                <i class="fas fa-download"></i> Download All Records
+            </button>
+            <button class="btn-secondary" id="downloadSelectedRecord" disabled>
+                <i class="fas fa-download"></i> Download Selected Record
+            </button>
+        </div>
+        
+        <div class="selection-info" id="selectionInfo" style="margin-bottom: 15px; font-size: 14px; color: var(--secondary-color); display: none;">
+            <i class="fas fa-info-circle"></i> <span id="selectedCount">0</span> record(s) selected
+        </div>
+        
+        <table id="matchesTable">
+            <thead>
+                <tr id="table-head">
+                    {% set input_fields = ["SUPPLIER_HU", "LOT_NUMBER", "QUANTITY", "Color"] %}
+                    
+                    {# Show input fields first if present in columns #}
+                    {% for col in input_fields if col in columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                    
+                    {# Then show the rest of the columns #}
+                    {% for col in columns if col not in input_fields %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+                
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<div class="voice-control">
+    <button class="btn-primary" id="startVoice">
+        <i class="fas fa-microphone"></i> Start 
+    </button>
+    <button class="btn-danger" id="stopVoice">
+        <i class="fas fa-microphone-slash"></i> Stop 
+    </button>
+    <button class="btn-secondary" id="toggleLanguage">
+        <i class="fas fa-language"></i> Switch Language
+    </button>
+    <div class="voice-status">
+        <span class="icon"><i class="fas fa-microphone"></i></span>
+        <span id="voiceStatusText" class="off">Off</span>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+<script>
+// Function to download all matching records as an Excel file
+// Global variables
+// Global variables
+const fields = ["SUPPLIER_HU", "LOT_NUMBER", "QUANTITY", "Color"];
+let currentInputIndex = 0;
+let isVoiceCommand = false;
+let currentData = [];
+let recognition;
+let recognizing = false;
+let currentLanguage = 'en-US';
+let autoRestartVoice = false;
+let currentField = fields[0]; // Track current focused field
+
+// Function to download all matching records as an Excel file
+function getTimestamp() {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    return `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
+}
+
+function downloadAllRecords() {
+    if (currentData.length === 0) {
+        alert("No records available to download.");
+        return;
+    }
+
+    const timestamp = getTimestamp();
+    const filename = `EFL_matching_records_${timestamp}.xlsx`;
+
+    const ws = XLSX.utils.json_to_sheet(currentData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Matching Records");
+
+    XLSX.writeFile(wb, filename);
+}
+
+function downloadSelectedRecord() {
+    const selectedRows = $("#matchesTable tr.selected");
+    if (selectedRows.length === 0) {
+        alert("Please select at least one record to download.");
+        return;
+    }
+
+    const selectedIndices = [];
+    selectedRows.each(function() {
+        selectedIndices.push($(this).index());
+    });
+
+    const selectedData = selectedIndices.map(index => currentData[index]);
+
+    const timestamp = getTimestamp();
+    const filename = `EFL_selected_records_${timestamp}.xlsx`;
+
+    const ws = XLSX.utils.json_to_sheet(selectedData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Selected Records");
+
+    XLSX.writeFile(wb, filename);
+}
+
+// Function to update selection UI
+function updateSelectionUI() {
+    const selectedCount = $("#matchesTable tr.selected").length;
+    const downloadSelectedBtn = $("#downloadSelectedRecord");
+    const selectionInfo = $("#selectionInfo");
+    
+    if (selectedCount > 0) {
+        downloadSelectedBtn.prop("disabled", false);
+        selectionInfo.show();
+        $("#selectedCount").text(selectedCount);
+    } else {
+        downloadSelectedBtn.prop("disabled", true);
+        selectionInfo.hide();
+    }
+}
+
+// Add row selection functionality
+function setupRowSelection() {
+    $("#matchesTable tbody").on("click", "tr", function(e) {
+        // Don't toggle selection if clicking on a link or button inside the row
+        if ($(e.target).is("a, button, input, select, textarea")) {
+            return;
+        }
+        
+        $(this).toggleClass("selected");
+        updateSelectionUI();
+    });
+    
+    // Handle Ctrl+A for select all
+    $(document).on("keydown", function(e) {
+        if (e.ctrlKey && e.key === "a") {
+            e.preventDefault();
+            $("#matchesTable tbody tr").addClass("selected");
+            updateSelectionUI();
+        }
+    });
+}
+
+// Debounce function to limit how often a function is called
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func.apply(context, args);
+        }, wait);
+    };
+}
+
+// Function to move to next field
+function moveToNextField(currentIndex) {
+    const nextIndex = (currentIndex + 1) % fields.length;
+    $(`#${fields[nextIndex]}`).focus().select();
+    currentInputIndex = nextIndex;
+    currentField = fields[nextIndex];
+}
+
+// Function to fetch and display filtered records
+function fetchFilteredRecords() {
+    const params = {
+        SUPPLIER_HU: $('#SUPPLIER_HU').val(),
+        LOT_NUMBER: $('#LOT_NUMBER').val(),
+        QUANTITY: $('#QUANTITY').val(),
+        Color: $('#Color').val()
+    };
+
+    // Show loading state
+    const refreshBtn = $('#refreshData');
+    const originalHtml = refreshBtn.html();
+    refreshBtn.html('<span class="loading"></span> Loading...');
+    refreshBtn.prop('disabled', true);
+
+    $.get('/filter', params, function(data) {
+        currentData = data;
+        const tbody = $("#matchesTable tbody");
+        tbody.empty();
+
+        // Update results count
+        $('#resultsCount').text(data.length);
+
+        if (data.length === 0) {
+            tbody.append(`<tr><td colspan="${$("#table-head th").length}" class="no-results">No matching records found. Try adjusting your filters.</td></tr>`);
+            refreshBtn.html(originalHtml);
+            refreshBtn.prop('disabled', false);
+            return;
+        }
+
+        const columnOrder = [];
+        $("#table-head th").each(function() {
+            columnOrder.push($(this).text().trim());
+        });
+
+        data.forEach(row => {
+            const tr = $("<tr>");
+            columnOrder.forEach(col => {
+                tr.append($("<td>").text(row[col] || ''));
+            });
+            tbody.append(tr);
+        });
+        
+        refreshBtn.html(originalHtml);
+        refreshBtn.prop('disabled', false);
+        
+        // Update selection UI after loading new data
+        updateSelectionUI();
+    }).fail(function() {
+        tbody.append(`<tr><td colspan="${$("#table-head th").length}" class="no-results">Error loading data. Please try again.</td></tr>`);
+        refreshBtn.html(originalHtml);
+        refreshBtn.prop('disabled', false);
+    });
+}
+
+function startVoiceRecognition() {
+    if (recognizing) {
+        console.log("Voice recognition is already active");
+        return;
+    }
+
+    // Check for browser support
+    const SpeechRecognition = window.SpeechRecognition || 
+                            window.webkitSpeechRecognition || 
+                            window.mozSpeechRecognition || 
+                            window.msSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in your browser. Please try Chrome, Edge, or Safari.");
+        return;
+    }
+
+    // Initialize recognition if not already initialized
+    if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = currentLanguage;
+
+        recognition.onstart = () => {
+            recognizing = true;
+            console.log("Voice recognition started");
+            updateVoiceUI(true);
+        };
+
+        recognition.onend = () => {
+            recognizing = false;
+            console.log("Voice recognition ended");
+            updateVoiceUI(false);
+            // Auto-restart if it ended unexpectedly
+            if (autoRestartVoice) {
+                setTimeout(startVoiceRecognition, 500);
+            }
+        };
+
+        recognition.onresult = (event) => {
+            const result = event.results[event.results.length - 1];
+            if (result.isFinal) {
+                const transcript = result[0].transcript.trim().toLowerCase();
+                console.log("Voice input:", transcript);
+                processVoiceCommand(transcript);
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Voice recognition error:", event.error);
+            updateVoiceUI(false);
+            
+            // Handle specific errors
+            switch(event.error) {
+                case 'not-allowed':
+                case 'permission-denied':
+                    alert("Microphone access denied. Please allow microphone access in your browser settings.");
+                    break;
+                case 'no-speech':
+                    console.log("No speech detected");
+                    break;
+                case 'audio-capture':
+                    alert("No microphone found. Please ensure a microphone is connected.");
+                    break;
+                case 'aborted':
+                    console.log("Voice recognition aborted");
+                    break;
+                default:
+                    console.log("Voice recognition error occurred");
+            }
+            
+            // Don't auto-restart on certain errors
+            if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+                autoRestartVoice = false;
+            }
+        };
+    }
+
+    try {
+        recognition.start();
+        console.log("Attempting to start voice recognition...");
+        autoRestartVoice = true; // Enable auto-restart
+    } catch (e) {
+        console.error("Error starting recognition:", e);
+        if (e.message.includes('not allowed') || e.message.includes('permission denied')) {
+            alert("Please allow microphone access to use voice recognition. Check your browser permissions.");
+        } else {
+            alert("Error starting voice recognition. Please try again.");
+        }
+        autoRestartVoice = false;
+    }
+}
+
+function stopVoiceRecognition() {
+    if (recognition) {
+        console.log("Stopping voice recognition...");
+        isVoiceCommand = false;
+        autoRestartVoice = false;
+        recognition.stop();
+        recognizing = false;
+        updateVoiceUI(false);
+    }
+}
+
+function updateVoiceUI(isListening) {
+    const statusText = $("#voiceStatusText");
+    const icon = $(".voice-status .icon");
+    const voiceControl = $(".voice-control");
+
+    if (isListening) {
+        voiceControl.css({
+            "box-shadow": "0 0 15px rgba(0, 255, 0, 0.5)",
+            "border": "2px solid var(--success-color)"
+        });
+        statusText.text("Listening").removeClass("off").addClass("listening");
+        icon.removeClass("fa-microphone").addClass("fa-microphone-alt");
+        $("#startVoice").prop("disabled", true);
+        $("#stopVoice").prop("disabled", false);
+    } else {
+        voiceControl.css({
+            "box-shadow": "",
+            "border": ""
+        });
+        statusText.text("Off").removeClass("listening").addClass("off");
+        icon.removeClass("fa-microphone-alt").addClass("fa-microphone");
+        $("#startVoice").prop("disabled", false);
+        $("#stopVoice").prop("disabled", true);
+    }
+}
+
+function clearAllFilters() {
+    fields.forEach(field => {
+        $(`#${field}`).val('');
+    });
+    fetchFilteredRecords();
+}
+
+function processVoiceCommand(transcript) {
+    // Convert Sinhala numbers to Western numerals if present
+    const sinhalaNumbers = {
+        'ශුන්ය': '0', 'එක': '1', 'දෙක': '2', 'තුන': '3', 'හතර': '4',
+        'පහ': '5', 'හය': '6', 'හත': '7', 'අට': '8', 'නවය': '9'
+    };
+    
+    // Replace Sinhala number words with digits
+    Object.keys(sinhalaNumbers).forEach(sinhala => {
+        const regex = new RegExp(sinhala, 'g');
+        transcript = transcript.replace(regex, sinhalaNumbers[sinhala]);
+    });
+
+    // Check for navigation commands in both English and Sinhala
+    if (transcript.includes("ඔකේ") || transcript.includes("ඊළඟ") || 
+        transcript === "ok" || transcript === "okay" || transcript === "next") {
+        isVoiceCommand = true;
+        moveToNextField(currentInputIndex);
+        return;
+    }
+    
+    // Check for clear command in Sinhala and English
+    if (transcript.includes("මකන්න") || transcript.includes("හිස්") || 
+        transcript === "clear" || transcript === "clear field") {
+        isVoiceCommand = true;
+        $(`#${fields[currentInputIndex]}`).val('').trigger('input');
+        return;
+    }
+    
+    // Check for clear all command in Sinhala and English
+    if (transcript.includes("සියල්ල මකන්න") || transcript.includes("යලි පටන් ගන්න") || 
+        transcript === "clear all" || transcript === "reset") {
+        isVoiceCommand = true;
+        clearAllFilters();
+        return;
+    }
+    
+    // Check for refresh command in Sinhala and English
+    if (transcript.includes("රිෆ්‍රෙෂ්") || transcript.includes("යාවත්කාල") || 
+        transcript === "refresh" || transcript === "reload") {
+        isVoiceCommand = true;
+        fetchFilteredRecords();
+        return;
+    }
+
+    // Process "last three" command in Sinhala ("අන්තිම තුන" or "අවසන් ඉලක්කම් තුන")
+    const lastThreePattern = /(අන්තිම|අවසන්)\s*(ඉලක්කම්|අංක|තුන|3)\s*(\d{3})|last three\s*(\d{3})/;
+    const match = transcript.match(lastThreePattern);
+    
+    if (currentField === "SUPPLIER_HU" && match) {
+        const lastThreeDigits = match[3] || match[4];
+        if (lastThreeDigits) {
+            const input = $(`#${currentField}`);
+            input.autocomplete("search", lastThreeDigits);
+            
+            setTimeout(() => {
+                const widget = input.autocomplete("widget");
+                const suggestions = widget.find("li");
+                
+                if (suggestions.length > 0) {
+                    let matchingSuggestion = null;
+                    
+                    suggestions.each(function() {
+                        const suggestionText = $(this).text();
+                        if (suggestionText.endsWith(lastThreeDigits)) {
+                            matchingSuggestion = suggestionText;
+                            return false;
+                        }
+                    });
+                    
+                    if (!matchingSuggestion && suggestions.length > 0) {
+                        matchingSuggestion = suggestions.first().text();
+                    }
+                    
+                    if (matchingSuggestion) {
+                        input.val(matchingSuggestion).trigger('input');
+                        input.autocomplete("close");
+                        
+                        setTimeout(() => {
+                            moveToNextField(currentInputIndex);
+                        }, 200);
+                    }
+                } else {
+                    input.val(lastThreeDigits).trigger('input');
+                    setTimeout(() => {
+                        moveToNextField(currentInputIndex);
+                    }, 200);
+                }
+            }, 500);
+            return;
+        }
+    }
+    
+    // Regular input for other fields
+    $(`#${currentField}`).val(transcript).trigger('input');
+}
+
+// Track focus changes
+$(document).on('focus', 'input[type="text"]', function() {
+    const fieldId = this.id;
+    if (fields.includes(fieldId)) {
+        currentInputIndex = fields.indexOf(fieldId);
+        currentField = fieldId;
+    }
+});
+
+// Initial load
+$(document).ready(function() {
+    // Check browser compatibility
+    if (!('webkitSpeechRecognition' in window)) {
+        $(".voice-control").hide();
+        console.warn("Speech recognition not supported in this browser");
+    }
+
+    // Initialize autocomplete for each field
+    fields.forEach((field, index) => {
+        $.getJSON(`/suggest/${field}`, data => {
+            $(`#${field}`).autocomplete({
+                source: function (request, response) {
+                    const results = $.ui.autocomplete.filter(data, request.term);
+                    response(request.term === "" ? data : results);
+                },
+                minLength: 0,
+                select: function (event, ui) {
+                    $(this).val(ui.item.value);
+                    fetchFilteredRecords();
+                    moveToNextField(index);
+                    return false;
+                }
+            }).focus(function() {
+                $(this).autocomplete("search", "");
+                currentInputIndex = fields.indexOf(this.id);
+                currentField = this.id;
+            });
+
+            $(`#${field}`).on("input", debounce(fetchFilteredRecords, 300));
+        });
+    });
+
+    setupRowSelection();
+    fetchFilteredRecords();
+    
+    // Event listeners for buttons
+    $("#clearFilters").click(clearAllFilters);
+    $("#refreshData").click(fetchFilteredRecords);
+    $("#downloadAllRecords").click(downloadAllRecords);
+    $("#downloadSelectedRecord").click(downloadSelectedRecord);
+    
+    // Voice control buttons
+    $("#startVoice").click(function(e) {
+        e.preventDefault();
+        startVoiceRecognition();
+    });
+    
+    $("#stopVoice").click(function(e) {
+        e.preventDefault();
+        stopVoiceRecognition();
+    });
+
+    // Toggle language button
+    $("#toggleLanguage").click(function() {
+        currentLanguage = currentLanguage === 'en-US' ? 'si-LK' : 'en-US';
+        const languageName = currentLanguage === 'en-US' ? 'English' : 'Sinhala';
+        alert(`Language switched to ${languageName}`);
+        
+        if (recognition && recognizing) {
+            stopVoiceRecognition();
+            setTimeout(startVoiceRecognition, 300);
+        }
+    });
+    
+    // Keyboard shortcuts
+    $(document).keydown(function(e) {
+        // Ctrl + Enter to refresh
+        if (e.ctrlKey && e.keyCode === 13) {
+            fetchFilteredRecords();
+        }
+        // Esc to clear current field
+        if (e.keyCode === 27) {
+            $(`#${fields[currentInputIndex]}`).val('').trigger('input');
+        }
+    });
+    
+    // Add tooltip for voice commands
+    $(".voice-control").append(`
+        <div class="tooltip" style="margin-left: 0;">
+            <i class="fas fa-info-circle"></i>
+            <span class="tooltiptext" style="width: 300px; left: -140px;">
+                <strong>Voice Commands:</strong><br>
+                English/Sinhala:<br>
+                - "Next"/"ඊළඟ" to move between fields<br>
+                - "Clear"/"මකන්න" to clear current field<br>
+                - "Clear all"/"සියල්ල මකන්න" to reset all filters<br>
+                - "Refresh"/"යාවත්කාල" to reload data<br>
+                - For SUPPLIER_HU: "last three 123" or "අන්තිම තුන 123"<br>
+                - Sinhala numbers supported (එක, දෙක, තුන...)
+            </span>
+        </div>
+    `);
+
+    // Check microphone permission state
+    if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({name: 'microphone'}).then(function(permissionStatus) {
+            console.log("Microphone permission state:", permissionStatus.state);
+            permissionStatus.onchange = function() {
+                console.log("Microphone permission state changed to:", this.state);
+            };
+        }).catch(error => {
+            console.log("Microphone permission query not supported:", error);
+        });
+    }
+});
+</script>
+</body>
+</html>

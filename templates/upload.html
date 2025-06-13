@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Excel – EFL 3PL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff6600;
+            --primary-dark: #e65c00;
+            --primary-light: #ff8533;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #e0e0e0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            margin: 0;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            margin: 0.5rem 0 0;
+            font-weight: 300;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .container {
+            background: var(--card-bg);
+            max-width: 500px;
+            margin: 3rem auto;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .upload-instructions {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+        
+        .file-upload {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .file-upload-label {
+            display: block;
+            width: 100%;
+            padding: 2rem;
+            border: 2px dashed var(--border);
+            background: #fafafa;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .file-upload-label:hover, 
+        .file-upload-label.drag-over {
+            border-color: var(--primary-light);
+            background: rgba(255, 102, 0, 0.05);
+        }
+        
+        .file-upload-label i {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .file-upload-label span {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--primary-dark);
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        button {
+            margin-top: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 102, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 1.5rem;
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>EFL 3PL</h1>
+        <p>Excel File Upload Portal</p>
+    </div>
+    <div class="container">
+        <h2>Upload Inventory Data</h2>
+        <p class="upload-instructions">
+            Please select your Excel file containing inventory data. 
+            The file should be in .xlsx format.
+        </p>
+        
+        <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+            <div class="file-upload">
+                <label for="file-input" class="file-upload-label" id="drop-area">
+                    <i>📁</i>
+                    <span>Click to browse or drag & drop your file</span>
+                </label>
+                <input id="file-input" type="file" name="file" required accept=".xlsx,.xls,.csv">
+                <div id="file-name" class="file-name"></div>
+            </div>
+            <button type="submit">Upload File</button>
+        </form>
+        
+        <div class="footer">
+            EFL 3PL
+        </div>
+    </div>
+    
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const fileNameDisplay = document.getElementById('file-name');
+        const form = document.getElementById('upload-form');
+
+        // Only prevent defaults on the form/drop area, not the whole document
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('drag-over');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('drag-over');
+        }
+
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                fileInput.files = files;
+                updateFileNameDisplay();
+            }
+        }
+
+        // Handle file selection via click
+        fileInput.addEventListener('change', updateFileNameDisplay);
+
+        function updateFileNameDisplay() {
+            const fileName = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+            fileNameDisplay.textContent = fileName;
+        }
+    </script>
+</body>
+</html>
